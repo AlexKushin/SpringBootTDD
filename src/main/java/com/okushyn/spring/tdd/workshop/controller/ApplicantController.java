@@ -19,7 +19,7 @@ public class ApplicantController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> createApplicant(final @RequestBody Applicant applicant) throws Exception {
-       applicantService.save(applicant);
-      return ResponseEntity.created(new URI("applicants/777")).build();
+        final Applicant savedApplicant = applicantService.save(applicant);
+        return ResponseEntity.created(new URI("applicants/" + savedApplicant.getApplicantId())).build();
     }
 }

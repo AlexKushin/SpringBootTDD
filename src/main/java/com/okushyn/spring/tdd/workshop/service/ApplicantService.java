@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ApplicantService {
-    public void save(Applicant applicant) {
-
+    public Applicant save(Applicant applicant) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
