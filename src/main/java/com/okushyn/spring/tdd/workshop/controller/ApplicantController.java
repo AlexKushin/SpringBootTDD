@@ -19,8 +19,9 @@ public class ApplicantController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> createApplicant(final @Valid @RequestBody Applicant applicant) throws Exception {
+    public ResponseEntity<Applicant> createApplicant(final @Valid @RequestBody Applicant applicant) throws Exception {
         final Applicant savedApplicant = applicantService.save(applicant);
-        return ResponseEntity.created(new URI("applicants/" + savedApplicant.getApplicantId())).build();
+        return ResponseEntity.created(new URI("applicants/" + savedApplicant.getApplicantId()))
+                .body(applicant);
     }
 }

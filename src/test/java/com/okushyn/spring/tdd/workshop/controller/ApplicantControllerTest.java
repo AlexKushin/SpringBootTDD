@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.mockito.Mockito.*;
@@ -77,7 +78,10 @@ class ApplicantControllerTest {
                 )
                 //3rd A - Assert
                 .andExpect(status().isCreated())
-                .andExpect(header().string(HttpHeaders.LOCATION, "applicants/" + applicantId));
+                .andExpect(header().string(HttpHeaders.LOCATION, "applicants/" + applicantId))
+                //checking json body
+                .andExpect(jsonPath("$.applicantId",equalTo(7)))
+                .andExpect(jsonPath("$.person.personName.lastName", equalTo("Lastname")));
 
         //to be sure that Applicant which I sent to controller actually the same as I received in ApplicantService
         final ArgumentCaptor<Applicant> applicantArgumentCaptor = ArgumentCaptor.forClass(Applicant.class);
