@@ -5,6 +5,9 @@ import com.okushyn.spring.tdd.workshop.model.*;
 import com.okushyn.spring.tdd.workshop.service.ApplicantService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,13 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 
 
 @WebMvcTest
@@ -86,6 +90,47 @@ class ApplicantControllerTest {
                 .usingRecursiveComparison()
                 .ignoringFields("applicantId") //in this place we don't need to compare id
                 .isEqualTo(originalApplicant);
+    }
+
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void createApplicant_shouldFailIfEmailOrLastNameNotProvided(final Applicant applicant) throws Exception {
+        when(applicantService.save(any(Applicant.class))).thenAnswer(invocation -> {
+            final Applicant app = invocation.getArgument(0, Applicant.class);
+            app.setApplicantId(7L);
+            return app;
+        });
+
+        mockMvc.perform(post("/applicants")
+                        .content(objectMapper.writeValueAsString(applicant))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    public static Stream<Arguments> parameters() {
+        return Stream.of(
+                Arguments.of(
+                        Applicant.builder()
+                                .build()),
+                Arguments.of(
+                        Applicant.builder()
+                                .person(Person.builder()
+                                        .personName(PersonName.builder()
+                                                .lastName("Lastname")
+                                                .build())
+                                        .build())
+                                .build()
+                ),
+                Arguments.of(Applicant.builder()
+                        .contactPoint(ContactPoint.builder()
+                                .electronicAddress(ElectronicAddress.builder()
+                                        .email("test@test.com")
+                                        .build())
+                                .build())
+                        .build())
+        );
+
     }
 
 }
