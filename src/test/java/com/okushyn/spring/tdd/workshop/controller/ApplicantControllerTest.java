@@ -1,6 +1,7 @@
 package com.okushyn.spring.tdd.workshop.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.okushyn.spring.tdd.workshop.exceptions.ApplicantAlreadyExistsException;
 import com.okushyn.spring.tdd.workshop.model.*;
 import com.okushyn.spring.tdd.workshop.service.ApplicantService;
 import org.junit.jupiter.api.DisplayName;
@@ -80,7 +81,7 @@ class ApplicantControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string(HttpHeaders.LOCATION, "applicants/" + applicantId))
                 //checking json body
-                .andExpect(jsonPath("$.applicantId",equalTo(7)))
+                .andExpect(jsonPath("$.applicantId", equalTo(7)))
                 .andExpect(jsonPath("$.person.personName.lastName", equalTo("Lastname")));
 
         //to be sure that Applicant which I sent to controller actually the same as I received in ApplicantService
@@ -136,5 +137,49 @@ class ApplicantControllerTest {
         );
 
     }
+
+    @Test
+    void createApplicant_shouldThrowExceptionIfApplicantExists() throws Exception {
+
+        Applicant applicant = Applicant.builder()
+                .person(Person.builder()
+                        .personName(PersonName.builder()
+                                .lastName("Lastname")
+                                .build())
+                        .build())
+                .contactPoint(ContactPoint.builder()
+                        .electronicAddress(ElectronicAddress.builder()
+                                .email("test@test.com")
+                                .build())
+                        .build())
+                .build();
+
+        when(applicantService.save(any(Applicant.class))).thenThrow(ApplicantAlreadyExistsException.class);
+        //2-nd - Act
+        mockMvc.perform(
+                //1-st A - Arrange
+                        post("/applicants")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(applicant))
+                )
+                //3-rd A - Assert
+                .andExpect(status().isConflict());
+
+        verify(applicantService, times(1)).save(any(Applicant.class));
+    }
+
+
+    // todo: get happy test
+
+    // todo: get unhappy test
+
+    //todo: put happy test
+
+    //todo: put unhappy test
+
+    // todo: delete happy test
+
+    // todo: delete unhappy test
+
 
 }
