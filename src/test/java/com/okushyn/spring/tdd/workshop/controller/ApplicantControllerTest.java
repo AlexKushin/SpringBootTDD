@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.okushyn.spring.tdd.workshop.exceptions.ApplicantAlreadyExistsException;
 import com.okushyn.spring.tdd.workshop.model.*;
 import com.okushyn.spring.tdd.workshop.service.ApplicantService;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,7 +43,7 @@ class ApplicantControllerTest {
 
     @Test
     void check_contextStarts() {
-        assertNotNull(mockMvc);
+        AssertionsForClassTypes.assertThat(mockMvc).isNotNull();
     }
 
     @Test
