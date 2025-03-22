@@ -28,23 +28,6 @@ public class ApplicantController {
     @GetMapping(params = {"email"}, path = "")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Applicant> getApplicant(final @RequestParam("email") String email) throws Exception {
-        Applicant applicantToGet = Applicant.builder()
-                .person(Person.builder()
-                        .personName(PersonName.builder()
-                                .lastName("Lastname")
-                                .build())
-                        .build())
-                .contactPoint(ContactPoint.builder()
-                        .electronicAddress(ElectronicAddress.builder()
-                                .email(email)
-                                .build())
-                        .build())
-                .build();
-
-        if(email.equals("badTest@test.com")) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok().body(applicantToGet);
+        return ResponseEntity.ok().body(applicantService.getByEmail(email));
     }
 }

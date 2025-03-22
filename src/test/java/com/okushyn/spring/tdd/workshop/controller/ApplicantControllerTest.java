@@ -2,6 +2,7 @@ package com.okushyn.spring.tdd.workshop.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.okushyn.spring.tdd.workshop.exceptions.ApplicantAlreadyExistsException;
+import com.okushyn.spring.tdd.workshop.exceptions.ApplicantNotExistsException;
 import com.okushyn.spring.tdd.workshop.model.*;
 import com.okushyn.spring.tdd.workshop.service.ApplicantService;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -219,6 +220,8 @@ class ApplicantControllerTest {
     @DisplayName("When an unknown to bank email is provided, then Status Code 404")
     void getApplicantByEmail_shouldThrowApplicantNotExistsException() throws Exception {
         String appEmail = "badTest@test.com";
+        when(applicantService.getByEmail(any(String.class))).thenThrow(ApplicantNotExistsException.class);
+
         mockMvc.perform(
                         get("/applicants")
                                 .param("email", appEmail)
@@ -227,7 +230,6 @@ class ApplicantControllerTest {
                 .andExpect(status().isNotFound());
 
         final ArgumentCaptor<String> emailArgumentCaptor = ArgumentCaptor.forClass(String.class);
-
 
         verify(applicantService, times(1)).getByEmail(emailArgumentCaptor.capture());
 

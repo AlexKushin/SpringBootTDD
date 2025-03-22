@@ -32,6 +32,7 @@ public class ApplicantService {
     }
 
     public Applicant getByEmail(String email) {
+
         return Applicant.builder().build();
     }
 }
