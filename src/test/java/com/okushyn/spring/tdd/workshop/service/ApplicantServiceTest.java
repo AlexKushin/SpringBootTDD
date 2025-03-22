@@ -14,8 +14,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @SpringJUnitConfig(classes = {ApplicantService.class}) //we ask spring to create real Applicant service
@@ -30,6 +31,45 @@ class ApplicantServiceTest {
     @Test
     void check_contextStart() { // help us understand whether we included all necessary classes to application context
         assertThat(applicantService).isNotNull();
+    }
+
+    @Test
+    void save_shouldReturnApplicant() {
+        when(applicantRepository.findByEmail(eq("test@test.com"))).thenReturn(Optional.empty());
+
+        final Applicant applicant = Applicant.builder()
+                .contactPoint(ContactPoint.builder()
+                        .electronicAddress(ElectronicAddress.builder()
+                                .email("test@test.com")
+                                .build())
+                        .build())
+                .build();
+
+        when(applicantRepository.save(any(Applicant.class))).thenAnswer(inv -> {
+            final Applicant toSave = inv.getArgument(0);
+            toSave.setApplicantId(10L);
+            return toSave;
+            });
+
+        final Applicant savedApplicant = applicantService.save(applicant);
+
+        assertThat(savedApplicant)
+                .isNotNull()
+                .withFailMessage("Should not be null"); //customize the failure message when an assertion fails
+
+        assertThat(savedApplicant)
+                .extracting(Applicant::getApplicantId)
+                .isNotNull()
+                .withFailMessage("ApplicantId is null");
+
+        assertThat(savedApplicant)
+                .usingRecursiveComparison()
+                .ignoringFields("applicantId")
+                .isEqualTo(applicant)
+                .withFailMessage("Saved applicant is not the same");
+
+        verify(applicantRepository, times(1)).save(eq(applicant));
+
     }
 
 
