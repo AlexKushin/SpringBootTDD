@@ -158,7 +158,7 @@ class ApplicantControllerTest {
         when(applicantService.save(any(Applicant.class))).thenThrow(ApplicantAlreadyExistsException.class);
         //2-nd - Act
         mockMvc.perform(
-                //1-st A - Arrange
+                        //1-st A - Arrange
                         post("/applicants")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(applicant))
@@ -172,7 +172,70 @@ class ApplicantControllerTest {
 
     // todo: get happy test
 
+    @Test
+    @DisplayName("When a valid email is provided, then Applicant record should be returned ")
+    void getApplicantByEmail_whenValidEmailThenReturnApplicant() throws Exception {
+        String appEmail = "test@test.com";
+        Applicant applicantToGet = Applicant.builder()
+                .person(Person.builder()
+                        .personName(PersonName.builder()
+                                .lastName("Lastname")
+                                .build())
+                        .build())
+                .contactPoint(ContactPoint.builder()
+                        .electronicAddress(ElectronicAddress.builder()
+                                .email(appEmail)
+                                .build())
+                        .build())
+                .build();
+        when(applicantService.getByEmail(appEmail)).thenAnswer(invocation -> applicantToGet);
+
+        mockMvc.perform(
+                        //1st A - Arrange
+                        get("/applicants")
+                                .param("email", appEmail)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                //3rd A - Assert
+                .andExpect(status().isOk())
+                //checking json body
+                .andExpect(jsonPath("$.contactPoint.electronicAddress.email", equalTo("test@test.com")));
+
+        final ArgumentCaptor<String> emailArgumentCaptor = ArgumentCaptor.forClass(String.class);
+
+
+        verify(applicantService, times(1)).getByEmail(emailArgumentCaptor.capture());
+
+        final String capturedEmail = emailArgumentCaptor.getValue();
+
+        assertThat(capturedEmail).isEqualTo(appEmail);
+
+
+    }
+
+
     // todo: get unhappy test
+    @Test
+    @DisplayName("When an unknown to bank email is provided, then Status Code 404")
+    void getApplicantByEmail_shouldThrowApplicantNotExistsException() throws Exception {
+        String appEmail = "badTest@test.com";
+        mockMvc.perform(
+                        get("/applicants")
+                                .param("email", appEmail)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+
+        final ArgumentCaptor<String> emailArgumentCaptor = ArgumentCaptor.forClass(String.class);
+
+
+        verify(applicantService, times(1)).getByEmail(emailArgumentCaptor.capture());
+
+        final String capturedEmail = emailArgumentCaptor.getValue();
+
+        assertThat(capturedEmail).isEqualTo(appEmail);
+    }
+
 
     //todo: put happy test
 

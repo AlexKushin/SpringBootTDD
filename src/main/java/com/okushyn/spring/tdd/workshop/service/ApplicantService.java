@@ -30,4 +30,8 @@ public class ApplicantService {
 
         return repository.save(applicant);
     }
+
+    public Applicant getByEmail(String email) {
+        return Applicant.builder().build();
+    }
 }
