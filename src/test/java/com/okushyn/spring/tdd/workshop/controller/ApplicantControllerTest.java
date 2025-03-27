@@ -202,8 +202,8 @@ class ApplicantControllerTest {
 
 
     @Test
-    @DisplayName("When a valid Applicant Id is provided, then Applicant record should be returned ")
-    void getApplicantById_whenValidEmailThenReturnApplicant() throws Exception {
+    @DisplayName("When a known to bank Applicant Id is provided, then Applicant record should be returned ")
+    void getApplicantById_whenValidIdThenReturnApplicant() throws Exception {
         long applicantId = 7L;
 
         when(applicantService.getById(applicantId)).thenAnswer(invocation -> {
@@ -240,10 +240,47 @@ class ApplicantControllerTest {
 
     }
 
+    @Test
+    @DisplayName("When a valid Applicant Id is provided, then Applicant record should be removed ")
+    void deleteApplicantById_whenKnownIdThenReturnApplicant() throws Exception {
+        long applicantId = 7L;
 
-    // todo: delete happy test
 
-    // todo: delete unhappy test
+        mockMvc.perform(
+                        delete("/applicants/" + applicantId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+
+        final ArgumentCaptor<Long> idArgumentCaptor = ArgumentCaptor.forClass(Long.class);
+
+        verify(applicantService, times(1)).deleteApplicantById(idArgumentCaptor.capture());
+
+        final Long capturedApplicantId = idArgumentCaptor.getValue();
+
+        assertThat(capturedApplicantId).isEqualTo(applicantId);
+
+
+
+
+    }
+
+    @Test
+    @DisplayName("When an unknown to bank Applicant id is provided, then Status Code 404")
+    void deleteApplicantById_shouldReturn404IfApplicantNotExists() throws Exception {
+        doThrow(new ApplicantNotExistsException()).when(applicantService).deleteApplicantById(anyLong());
+
+        mockMvc.perform(
+                        delete("/applicants/" + anyLong())
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+
+        verify(applicantService, times(1)).deleteApplicantById(anyLong());
+
+    }
+
 
 
 

@@ -49,4 +49,8 @@ public class ApplicantService {
         }
         return applicant.get();
     }
+
+    public void deleteApplicantById(Long l) {
+
+    }
 }
