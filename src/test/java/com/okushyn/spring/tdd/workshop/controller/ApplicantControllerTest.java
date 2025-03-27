@@ -19,11 +19,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -50,18 +50,7 @@ class ApplicantControllerTest {
     @Test
     @DisplayName("When a valid name and email are provided, then ID of created record should be returned ")
     void createApplicant_whenValidEmailAndLastNameProvidedThenReturnId() throws Exception {
-        Applicant originalApplicant = Applicant.builder()
-                .person(Person.builder()
-                        .personName(PersonName.builder()
-                                .lastName("Lastname")
-                                .build())
-                        .build())
-                .contactPoint(ContactPoint.builder()
-                        .electronicAddress(ElectronicAddress.builder()
-                                .email("test@test.com")
-                                .build())
-                        .build())
-                .build();
+        Applicant originalApplicant = getApplicantWithLastnameAndElectronicAddressForTest();
         //here I ask my mock of applicant service to answer me with Applicant object and set its id
         final Long applicantId = 7L;
 
@@ -141,20 +130,9 @@ class ApplicantControllerTest {
     }
 
     @Test
-    void createApplicant_shouldThrowExceptionIfApplicantExists() throws Exception {
+    void createApplicant_shouldReturn409WhenApplicantExists() throws Exception {
 
-        Applicant applicant = Applicant.builder()
-                .person(Person.builder()
-                        .personName(PersonName.builder()
-                                .lastName("Lastname")
-                                .build())
-                        .build())
-                .contactPoint(ContactPoint.builder()
-                        .electronicAddress(ElectronicAddress.builder()
-                                .email("test@test.com")
-                                .build())
-                        .build())
-                .build();
+        Applicant applicant = getApplicantWithLastnameAndElectronicAddressForTest();
 
         when(applicantService.save(any(Applicant.class))).thenThrow(ApplicantAlreadyExistsException.class);
         //2-nd - Act
@@ -170,25 +148,11 @@ class ApplicantControllerTest {
         verify(applicantService, times(1)).save(any(Applicant.class));
     }
 
-
-    // todo: get happy test
-
     @Test
     @DisplayName("When a valid email is provided, then Applicant record should be returned ")
     void getApplicantByEmail_whenValidEmailThenReturnApplicant() throws Exception {
         String appEmail = "test@test.com";
-        Applicant applicantToGet = Applicant.builder()
-                .person(Person.builder()
-                        .personName(PersonName.builder()
-                                .lastName("Lastname")
-                                .build())
-                        .build())
-                .contactPoint(ContactPoint.builder()
-                        .electronicAddress(ElectronicAddress.builder()
-                                .email(appEmail)
-                                .build())
-                        .build())
-                .build();
+        Applicant applicantToGet = getApplicantWithLastnameAndElectronicAddressForTest();
         when(applicantService.getByEmail(appEmail)).thenAnswer(invocation -> applicantToGet);
 
         mockMvc.perform(
@@ -214,11 +178,9 @@ class ApplicantControllerTest {
 
     }
 
-
-    // todo: get unhappy test
     @Test
     @DisplayName("When an unknown to bank email is provided, then Status Code 404")
-    void getApplicantByEmail_shouldThrowApplicantNotExistsException() throws Exception {
+    void getApplicantByEmail_shouldReturn404IfApplicantNotExists() throws Exception {
         String appEmail = "badTest@test.com";
         when(applicantService.getByEmail(any(String.class))).thenThrow(ApplicantNotExistsException.class);
 
@@ -239,13 +201,66 @@ class ApplicantControllerTest {
     }
 
 
-    //todo: put happy test
+    @Test
+    @DisplayName("When a valid Applicant Id is provided, then Applicant record should be returned ")
+    void getApplicantById_whenValidEmailThenReturnApplicant() throws Exception {
+        long applicantId = 7L;
 
-    //todo: put unhappy test
+        when(applicantService.getById(applicantId)).thenAnswer(invocation -> {
+            final Applicant applicantToReturn = getApplicantWithLastnameAndElectronicAddressForTest();
+
+            applicantToReturn.setApplicantId(applicantId);
+            return Optional.of(applicantToReturn);
+        });
+
+        mockMvc.perform(
+                        get("/applicants/" + applicantId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.applicantId", equalTo((int) applicantId)));
+
+        verify(applicantService, times(1)).getById(anyLong());
+
+    }
+
+    @Test
+    @DisplayName("When an unknown to bank Applicant id is provided, then Status Code 404")
+    void getApplicantById_shouldReturn404IfApplicantNotExists() throws Exception {
+        when(applicantService.getById(anyLong())).thenThrow(ApplicantNotExistsException.class);
+
+        mockMvc.perform(
+                        get("/applicants/" + anyLong())
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+
+        verify(applicantService, times(1)).getById(anyLong());
+
+
+    }
+
 
     // todo: delete happy test
 
     // todo: delete unhappy test
+
+
+
+    private Applicant getApplicantWithLastnameAndElectronicAddressForTest() {
+        return Applicant.builder()
+                .person(Person.builder()
+                        .personName(PersonName.builder()
+                                .lastName("Lastname")
+                                .build())
+                        .build())
+                .contactPoint(ContactPoint.builder()
+                        .electronicAddress(ElectronicAddress.builder()
+                                .email("test@test.com")
+                                .build())
+                        .build())
+                .build();
+    }
 
 
 }

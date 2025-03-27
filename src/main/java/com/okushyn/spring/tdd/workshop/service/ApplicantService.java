@@ -41,4 +41,8 @@ public class ApplicantService {
         }
         return applicant.get();
     }
+
+    public Applicant getById(Long applicantId) {
+        return Applicant.builder().build();
+    }
 }
