@@ -1,6 +1,7 @@
 package com.okushyn.spring.tdd.workshop.service;
 
 import com.okushyn.spring.tdd.workshop.exceptions.ApplicantAlreadyExistsException;
+import com.okushyn.spring.tdd.workshop.exceptions.ApplicantNotExistsException;
 import com.okushyn.spring.tdd.workshop.model.Applicant;
 import com.okushyn.spring.tdd.workshop.model.ContactPoint;
 import com.okushyn.spring.tdd.workshop.model.ElectronicAddress;
@@ -90,5 +91,52 @@ class ApplicantServiceTest {
         })
                 .isInstanceOf(ApplicantAlreadyExistsException.class);
     }
+
+    @Test
+    void getByEmail_shouldReturnApplicantByProvidedEmail() {
+        final Applicant applicant = Applicant.builder()
+                .contactPoint(ContactPoint.builder()
+                        .electronicAddress(ElectronicAddress.builder()
+                                .email("test@test.com")
+                                .build())
+                        .build())
+                .build();
+
+        when(applicantRepository.findByEmail(eq("test@test.com"))).thenReturn(Optional.of(applicant));
+
+        final Applicant applicantByEmail = applicantService.getByEmail("test@test.com");
+
+        assertThat(applicantByEmail)
+                .isNotNull()
+                .withFailMessage("Should not be null");
+
+        assertThat(applicantByEmail)
+                .usingRecursiveComparison()
+                .ignoringFields("applicantId")
+                .isEqualTo(applicant)
+                .withFailMessage("Saved applicant is not the same");
+
+        verify(applicantRepository, times(1)).findByEmail(any(String.class));
+    }
+
+    @Test
+    void getByEmail_shouldThrowExceptionIfApplicantIsNotExist() {
+        when(applicantRepository.findByEmail(eq("test@test.com"))).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> {
+            applicantService.getByEmail("test@test.com");
+        })
+                .isInstanceOf(ApplicantNotExistsException.class);
+
+        verify(applicantRepository, times(1)).findByEmail(eq("test@test.com"));
+
+    }
+
+
+    //todo: get by Id happy path
+    //todo: get by Id unhappy path
+
+    //todo: delete happy path
+    //todo: delete unhappy path
 
 }
