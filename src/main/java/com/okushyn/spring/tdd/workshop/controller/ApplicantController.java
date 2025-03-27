@@ -27,13 +27,20 @@ public class ApplicantController {
 
     @GetMapping(params = {"email"}, path = "")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Applicant> getApplicant(final @RequestParam("email") String email) throws Exception {
+    public ResponseEntity<Applicant> getApplicant(final @RequestParam("email") String email) {
         return ResponseEntity.ok().body(applicantService.getByEmail(email));
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Applicant> getApplicantById(final @PathVariable Long id) throws Exception {
+    public ResponseEntity<Applicant> getApplicantById(final @PathVariable Long id) {
         return ResponseEntity.ok().body(applicantService.getById(id));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> deleteApplicant(final @PathVariable Long id) {
+        applicantService.deleteApplicantById(id);
+        return ResponseEntity.ok().build();
     }
 }
