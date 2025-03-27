@@ -6,7 +6,9 @@ import com.okushyn.spring.tdd.workshop.model.Applicant;
 import com.okushyn.spring.tdd.workshop.model.ContactPoint;
 import com.okushyn.spring.tdd.workshop.model.ElectronicAddress;
 import com.okushyn.spring.tdd.workshop.repository.ApplicantRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -172,7 +174,38 @@ class ApplicantServiceTest {
 
     }
 
-    //todo: delete happy path
-    //todo: delete unhappy path
+
+    @Test
+    void deleteApplicantById_shouldDeleteApplicantByProvidedId() {
+        long applicantId = 7L;
+
+        when(applicantRepository.findById(applicantId)).thenReturn(Optional.of(Applicant.builder().build()));
+        doNothing().when(applicantRepository).deleteById(applicantId);
+
+        applicantService.deleteApplicantById(applicantId);
+
+        final ArgumentCaptor<Long> idArgumentCaptor = ArgumentCaptor.forClass(Long.class);
+
+        verify(applicantRepository, times(1)).findById(applicantId);
+        verify(applicantRepository, times(1)).deleteById(idArgumentCaptor.capture());
+
+        final Long capturedApplicantId = idArgumentCaptor.getValue();
+
+        Assertions.assertThat(capturedApplicantId).isEqualTo(applicantId);
+
+    }
+
+    @Test
+    void deleteApplicantById_shouldThrowExceptionIfApplicantIsNotExist() {
+        when(applicantRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> {
+            applicantService.deleteApplicantById(anyLong());
+        })
+                .isInstanceOf(ApplicantNotExistsException.class);
+
+        verify(applicantRepository, times(1)).findById(anyLong());
+
+    }
 
 }

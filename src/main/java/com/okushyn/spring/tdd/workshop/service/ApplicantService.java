@@ -36,21 +36,22 @@ public class ApplicantService {
 
         Optional<Applicant> applicant = repository.findByEmail(email);
 
-        if(applicant.isEmpty()){
-            throw new ApplicantNotExistsException("Applicant not with email "+email+" is unknown" );
+        if (applicant.isEmpty()) {
+            throw new ApplicantNotExistsException("Applicant not with email " + email + " is unknown");
         }
         return applicant.get();
     }
 
     public Applicant getById(Long applicantId) {
         Optional<Applicant> applicant = repository.findById(applicantId);
-        if(applicant.isEmpty()){
-            throw new ApplicantNotExistsException("Applicant with id "+applicantId+" is unknown" );
+        if (applicant.isEmpty()) {
+            throw new ApplicantNotExistsException("Applicant with id " + applicantId + " is unknown");
         }
         return applicant.get();
     }
 
-    public void deleteApplicantById(Long l) {
-
+    public void deleteApplicantById(Long applicantId) {
+        getById(applicantId);
+        repository.deleteById(applicantId);
     }
 }

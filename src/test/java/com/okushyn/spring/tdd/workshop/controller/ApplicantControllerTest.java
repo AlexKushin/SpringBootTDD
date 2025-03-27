@@ -260,10 +260,6 @@ class ApplicantControllerTest {
         final Long capturedApplicantId = idArgumentCaptor.getValue();
 
         assertThat(capturedApplicantId).isEqualTo(applicantId);
-
-
-
-
     }
 
     @Test
@@ -298,6 +294,5 @@ class ApplicantControllerTest {
                         .build())
                 .build();
     }
-
 
 }
