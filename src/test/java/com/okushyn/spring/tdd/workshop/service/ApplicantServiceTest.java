@@ -50,7 +50,7 @@ class ApplicantServiceTest {
             final Applicant toSave = inv.getArgument(0);
             toSave.setApplicantId(10L);
             return toSave;
-            });
+        });
 
         final Applicant savedApplicant = applicantService.save(applicant);
 
@@ -132,9 +132,45 @@ class ApplicantServiceTest {
 
     }
 
+    @Test
+    void getById_shouldReturnApplicantByProvidedId() {
+        long applicantId = 7L;
+        final Applicant applicant = Applicant.builder().applicantId(applicantId)
+                .contactPoint(ContactPoint.builder()
+                        .electronicAddress(ElectronicAddress.builder()
+                                .email("test@test.com")
+                                .build())
+                        .build())
+                .build();
 
-    //todo: get by Id happy path
-    //todo: get by Id unhappy path
+        when(applicantRepository.findById(applicantId)).thenReturn(Optional.of(applicant));
+
+        final Applicant applicantById = applicantService.getById(applicantId);
+
+        assertThat(applicantById)
+                .isNotNull()
+                .withFailMessage("Should not be null");
+
+        assertThat(applicantById)
+                .usingRecursiveComparison()
+                .isEqualTo(applicant)
+                .withFailMessage("Saved applicant is not the same");
+
+        verify(applicantRepository, times(1)).findById(applicantId);
+    }
+
+    @Test
+    void getById_shouldThrowExceptionIfApplicantIsNotExist() {
+        when(applicantRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> {
+            applicantService.getById(anyLong());
+        })
+                .isInstanceOf(ApplicantNotExistsException.class);
+
+        verify(applicantRepository, times(1)).findById(anyLong());
+
+    }
 
     //todo: delete happy path
     //todo: delete unhappy path

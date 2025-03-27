@@ -43,6 +43,10 @@ public class ApplicantService {
     }
 
     public Applicant getById(Long applicantId) {
-        return Applicant.builder().build();
+        Optional<Applicant> applicant = repository.findById(applicantId);
+        if(applicant.isEmpty()){
+            throw new ApplicantNotExistsException("Applicant with id "+applicantId+" is unknown" );
+        }
+        return applicant.get();
     }
 }
