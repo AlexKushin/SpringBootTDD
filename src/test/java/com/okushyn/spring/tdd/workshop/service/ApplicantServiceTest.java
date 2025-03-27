@@ -88,9 +88,7 @@ class ApplicantServiceTest {
                         .build())
                 .build();
 
-        assertThatThrownBy(() -> {
-            applicantService.save(applicant);
-        })
+        assertThatThrownBy(() -> applicantService.save(applicant))
                 .isInstanceOf(ApplicantAlreadyExistsException.class);
     }
 
@@ -125,9 +123,7 @@ class ApplicantServiceTest {
     void getByEmail_shouldThrowExceptionIfApplicantIsNotExist() {
         when(applicantRepository.findByEmail(eq("test@test.com"))).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> {
-            applicantService.getByEmail("test@test.com");
-        })
+        assertThatThrownBy(() -> applicantService.getByEmail("test@test.com"))
                 .isInstanceOf(ApplicantNotExistsException.class);
 
         verify(applicantRepository, times(1)).findByEmail(eq("test@test.com"));
@@ -165,9 +161,7 @@ class ApplicantServiceTest {
     void getById_shouldThrowExceptionIfApplicantIsNotExist() {
         when(applicantRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> {
-            applicantService.getById(anyLong());
-        })
+        assertThatThrownBy(() -> applicantService.getById(anyLong()))
                 .isInstanceOf(ApplicantNotExistsException.class);
 
         verify(applicantRepository, times(1)).findById(anyLong());
@@ -199,9 +193,7 @@ class ApplicantServiceTest {
     void deleteApplicantById_shouldThrowExceptionIfApplicantIsNotExist() {
         when(applicantRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> {
-            applicantService.deleteApplicantById(anyLong());
-        })
+        assertThatThrownBy(() -> applicantService.deleteApplicantById(anyLong()))
                 .isInstanceOf(ApplicantNotExistsException.class);
 
         verify(applicantRepository, times(1)).findById(anyLong());
