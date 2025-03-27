@@ -1,6 +1,7 @@
 package com.okushyn.spring.tdd.workshop.service;
 
 import com.okushyn.spring.tdd.workshop.exceptions.ApplicantAlreadyExistsException;
+import com.okushyn.spring.tdd.workshop.exceptions.ApplicantNotExistsException;
 import com.okushyn.spring.tdd.workshop.model.Applicant;
 import com.okushyn.spring.tdd.workshop.model.ContactPoint;
 import com.okushyn.spring.tdd.workshop.model.ElectronicAddress;
@@ -33,6 +34,11 @@ public class ApplicantService {
 
     public Applicant getByEmail(String email) {
 
-        return Applicant.builder().build();
+        Optional<Applicant> applicant = repository.findByEmail(email);
+
+        if(applicant.isEmpty()){
+            throw new ApplicantNotExistsException("Applicant not with email "+email+" is unknown" );
+        }
+        return applicant.get();
     }
 }
