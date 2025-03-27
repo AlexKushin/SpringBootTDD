@@ -30,4 +30,10 @@ public class ApplicantController {
     public ResponseEntity<Applicant> getApplicant(final @RequestParam("email") String email) throws Exception {
         return ResponseEntity.ok().body(applicantService.getByEmail(email));
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Applicant> getApplicantById(final @PathVariable Long id) throws Exception {
+        return ResponseEntity.ok().body(applicantService.getById(id));
+    }
 }
